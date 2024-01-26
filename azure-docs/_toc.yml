@@ -4,5 +4,6 @@
 format: jb-book
 root: intro
 chapters:
+- file: chapter-0/data_asset.ipynb
 - file: chapter-1/components.ipynb
 - file: chapter-1/metadata.ipynb

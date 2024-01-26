@@ -9,7 +9,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>&lt;no title&gt; &#8212; Azure Machine Learning</title>
+    <title>Component metadata &#8212; Azure Machine Learning</title>
   
   
   
@@ -163,8 +163,9 @@ const thebe_selector_output = ".output, .cell_output"
                 </a>
             </li>
         </ul>
-        <ul class="nav bd-sidenav">
+        <ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="components.html">Components</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Component metadata</a></li>
 </ul>
 
     </div>
@@ -350,7 +351,7 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1><no title></h1>
+    <h1>Component metadata</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -359,9 +360,9 @@ document.write(`
                 <h2> Contents </h2>
             </div>
             <nav aria-label="Page">
-                <ul class="simple visible nav section-nav flex-column">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rendering-in-azure">Rendering in azure</a></li>
 </ul>
-
             </nav>
         </div>
     </div>
@@ -372,13 +373,61 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Component metadata</span>
+  <section class="tex2jax_ignore mathjax_ignore" id="component-metadata">
+<h1>Component metadata<a class="headerlink" href="#component-metadata" title="Permalink to this heading">#</a></h1>
+<p>The component metadata is a <code class="docutils literal notranslate"><span class="pre">.yaml</span></code> file file that contains the metadata for a component. The metadata is used by the component registry to display information about the component and to run it correctly in Azure.</p>
+<p>Lets dive deeper into the train test spliter metadata file:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">$schema</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://azuremlschemas.azureedge.net/latest/commandComponent.schema.json</span>
+<span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">command</span>
+
+<span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">train_test_split</span>
+<span class="nt">display_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Train_Test_Split</span>
+
+<span class="nt">environment</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">azureml:AzureML-sklearn-1.0-ubuntu20.04-py38-cpu:1</span>
+
+<span class="nt">inputs</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">input_file_path</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">uri_file</span>
+<span class="w">  </span><span class="nt">train_test_ratio</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">number</span>
+<span class="w">    </span><span class="nt">default</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.8</span><span class="w">    </span>
+
+<span class="nt">outputs</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">train_data</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">uri_file</span>
+<span class="w">  </span><span class="nt">test_data</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">uri_file</span>
+
+<span class="nt">command</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">&gt;-</span>
+<span class="w">  </span><span class="no">python component.py</span>
+<span class="w">  </span><span class="no">--input_file_path ${{inputs.input_file_path}} </span>
+<span class="w">  </span><span class="no">--training_data_path ${{outputs.train_data}}</span>
+<span class="w">  </span><span class="no">--train_test_ratio ${{inputs.train_test_ratio}}</span>
+<span class="w">  </span><span class="no">--test_data_path ${{outputs.test_data}}</span>
 </pre></div>
 </div>
+<p>The most important parts to know from this file is the <code class="docutils literal notranslate"><span class="pre">inputs</span></code> and <code class="docutils literal notranslate"><span class="pre">outputs</span></code> section. These inputs and outputs will be taken care of by Azure and inplace of <code class="docutils literal notranslate"><span class="pre">uri_file</span></code> or <code class="docutils literal notranslate"><span class="pre">uri_folder</span></code>, will contain paths in azure storage.</p>
+<p>In azure, the <code class="docutils literal notranslate"><span class="pre">command</span></code> part will be executed in a docker container. The <code class="docutils literal notranslate"><span class="pre">environment</span></code> section specifies which docker container to use. The command line arguments will be prefiled with the inputs and outputs from the <code class="docutils literal notranslate"><span class="pre">inputs</span></code> and <code class="docutils literal notranslate"><span class="pre">outputs</span></code> section.</p>
+<p>Thus, the schema is like this:</p>
+<p><img alt="schema" src="../_images/components_metadata.png" /></p>
+<p>When azure runs the components, the variables</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="si">${</span><span class="p">{inputs.input_data</span><span class="si">}</span><span class="o">}</span><span class="w"> </span>
+<span class="si">${</span><span class="p">{outputs.train_data</span><span class="si">}</span><span class="o">}</span>
+<span class="si">${</span><span class="p">{inputs.train_test_split</span><span class="si">}</span><span class="o">}</span>
+<span class="si">${</span><span class="p">{outputs.test_data</span><span class="si">}</span><span class="o">}</span>
+</pre></div>
 </div>
-</div>
+<p>Get changed to the actual paths in azure storage or, for input types of <code class="docutils literal notranslate"><span class="pre">number</span></code> or <code class="docutils literal notranslate"><span class="pre">string</span></code>, the actual value we set it in azure.</p>
+<section id="rendering-in-azure">
+<h2>Rendering in azure<a class="headerlink" href="#rendering-in-azure" title="Permalink to this heading">#</a></h2>
+<p>Now that we have <a class="reference external" href="http://component.py">component.py</a> and run.yaml files, we can upload to azure.</p>
+<p>We can do that by going to the machine learning studio -&gt; components -&gt; new component -&gt; upload a component -&gt; select the folder that contains the <a class="reference external" href="http://component.py">component.py</a> and run.yaml files.</p>
+<p>The component is rendered like:</p>
+<p><img alt="rendered" src="../_images/component_azure.png" /></p>
+<p>The top buble represents the input to the component and the bottom two represent the outputs. The parameter <code class="docutils literal notranslate"><span class="pre">train_test_ratio</span></code> is a parameter that can be set in the component and is not rendered in the UI.</p>
+<p>T</p>
+</section>
+</section>
 
     <script type="text/x-thebe-config">
     {
@@ -434,9 +483,9 @@ document.write(`
     <i class="fa-solid fa-list"></i> Contents
   </div>
   <nav class="bd-toc-nav page-toc">
-    <ul class="simple visible nav section-nav flex-column">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#rendering-in-azure">Rendering in azure</a></li>
 </ul>
-
   </nav></div>
 
 </div></div>
